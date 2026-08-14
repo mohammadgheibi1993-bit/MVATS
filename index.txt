@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MP Detection Studio — SonataBeat</title>
+<style>
+:root{
+  --bg:#0a0e17; --bg-elev1:#111827; --bg-elev2:#171f33; --bg-elev3:#1e2740;
+  --border:#293350; --border-soft:#1d2540;
+  --text-primary:#eef2fb; --text-secondary:#9aa7c4; --text-muted:#68729130;
+  --text-mut:#6b7691;
+  --accent:#2a78d6; --accent-soft:rgba(42,120,214,.14); --accent-glow:rgba(42,120,214,.35);
+  --orange:#eb6834; --aqua:#1baf7a; --yellow:#eda100; --magenta:#e87ba4; --violet:#4a3aa7; --red:#e34948; --green:#0ca30c;
+  --radius:14px; --radius-sm:9px;
+  --shadow:0 10px 40px -12px rgba(0,0,0,.55);
+  font-size:15px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    radial-gradient(1100px 550px at 12% -10%, rgba(42,120,214,.16), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(74,58,167,.14), transparent 55%),
+    var(--bg);
+  color:var(--text-primary);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  min-height:100vh;
+  line-height:1.5;
+}
+a{color:var(--accent);}
+.wrap{max-width:1360px;margin:0 auto;padding:0 28px 80px;}
+
+/* ---------- Top bar ---------- */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  backdrop-filter:blur(14px) saturate(140%);
+  background:rgba(10,14,23,.78);
+  border-bottom:1px solid var(--border-soft);
+}
+.topbar-inner{max-width:1360px;margin:0 auto;padding:16px 28px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+.brand{display:flex;align-items:center;gap:11px;margin-right:auto;}
+.brand-mark{
+  width:34px;height:34px;border-radius:10px;flex:none;
+  background:linear-gradient(135deg,var(--accent),var(--violet));
+  display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px -2px var(--accent-glow);
+}
+.brand-mark svg{width:18px;height:18px;}
+.brand-text h1{font-size:16px;margin:0;font-weight:700;letter-spacing:.2px;}
+.brand-text p{font-size:12px;margin:1px 0 0;color:var(--text-secondary);}
+.stepper{display:flex;align-items:center;gap:4px;}
+.step{
+  display:flex;align-items:center;gap:7px;padding:7px 12px 7px 8px;border-radius:999px;
+  font-size:12.5px;color:var(--text-mut);border:1px solid transparent;transition:.25s;
+}
+.step .dot{width:20px;height:20px;border-radius:50%;background:var(--bg-elev2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text-mut);flex:none;transition:.25s;}
+.step.active{color:var(--text-primary);background:var(--accent-soft);border-color:rgba(42,120,214,.35);}
+.step.active .dot{background:var(--accent);border-color:var(--accent);color:#fff;}
+.step.done .dot{background:var(--green);border-color:var(--green);color:#fff;}
+.step.done{color:var(--text-secondary);}
+.step-sep{width:14px;height:1px;background:var(--border);}
+
+/* ---------- Cards / layout ---------- */
+.grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:22px;align-items:start;}
+@media(max-width:920px){.grid2{grid-template-columns:1fr;}}
+.card{
+  background:linear-gradient(180deg,var(--bg-elev1),var(--bg-elev1) 60%,var(--bg-elev1));
+  border:1px solid var(--border-soft);border-radius:var(--radius);padding:22px 24px;box-shadow:var(--shadow);
+}
+.card + .card{margin-top:22px;}
+.card-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px;}
+.card-head h2{font-size:15px;margin:0;font-weight:700;}
+.card-head .sub{font-size:12.5px;color:var(--text-secondary);}
+.section-title{font-size:22px;font-weight:800;margin:34px 0 4px;letter-spacing:-.2px;}
+.section-desc{color:var(--text-secondary);font-size:13.5px;margin:0 0 18px;max-width:680px;}
+
+/* ---------- Dropzone ---------- */
+.dropzone{
+  border:1.5px dashed var(--border);border-radius:var(--radius-sm);padding:34px 20px;text-align:center;
+  cursor:pointer;transition:.2s;background:var(--bg-elev2);
+}
+.dropzone:hover,.dropzone.drag{border-color:var(--accent);background:var(--accent-soft);}
+.dropzone svg{width:34px;height:34px;color:var(--accent);margin-bottom:8px;}
+.dropzone h3{margin:4px 0 4px;font-size:14.5px;}
+.dropzone p{margin:0;font-size:12.5px;color:var(--text-secondary);}
+.dropzone input{display:none;}
+.file-summary{margin-top:14px;display:none;}
+.file-summary.show{display:block;}
+.file-summary-row{display:flex;align-items:center;gap:12px;background:var(--bg-elev2);border:1px solid var(--border-soft);
+  border-radius:var(--radius-sm);padding:10px 12px;}
+.file-thumb{width:52px;height:52px;border-radius:8px;object-fit:cover;background:#000;flex:none;border:1px solid var(--border);}
+.file-meta{flex:1;min-width:0;}
+.file-meta .name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.file-meta .detail{font-size:11.5px;color:var(--text-secondary);margin-top:2px;}
+.file-clear{font-size:12px;color:var(--red);cursor:pointer;background:none;border:none;padding:6px 8px;flex:none;}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 9px;border-radius:999px;background:var(--bg-elev3);
+  border:1px solid var(--border);color:var(--text-secondary);font-weight:600;}
+.badge.ok{color:var(--green);border-color:rgba(12,163,12,.35);background:rgba(12,163,12,.1);}
+
+/* ---------- Form fields ---------- */
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;}
+.field-grid.cols3{grid-template-columns:1fr 1fr 1fr;}
+@media(max-width:560px){.field-grid,.field-grid.cols3{grid-template-columns:1fr 1fr;}}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field label{font-size:12px;color:var(--text-secondary);font-weight:600;display:flex;align-items:center;gap:5px;}
+.field label .info{
+  width:14px;height:14px;border-radius:50%;background:var(--bg-elev3);color:var(--text-mut);font-size:9.5px;font-weight:700;
+  display:inline-flex;align-items:center;justify-content:center;cursor:help;border:1px solid var(--border);
+}
+.field input[type=number],.field input[type=text],.field select{
+  background:var(--bg-elev2);border:1px solid var(--border);color:var(--text-primary);border-radius:8px;
+  padding:9px 10px;font-size:13px;font-family:inherit;outline:none;transition:.15s;width:100%;
+}
+.field input:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+.field .hint{font-size:11px;color:var(--text-mut);}
+.seg{display:flex;background:var(--bg-elev2);border:1px solid var(--border);border-radius:8px;padding:3px;gap:3px;}
+.seg button{flex:1;background:none;border:none;color:var(--text-secondary);font-size:12.5px;font-weight:600;padding:8px 6px;
+  border-radius:6px;cursor:pointer;transition:.15s;}
+.seg button.active{background:var(--accent);color:#fff;}
+
+.advanced-toggle{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--accent);cursor:pointer;
+  margin-top:16px;font-weight:600;user-select:none;}
+.advanced-toggle svg{width:13px;height:13px;transition:.2s;}
+.advanced-toggle.open svg{transform:rotate(90deg);}
+.advanced-body{display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border-soft);}
+.advanced-body.open{display:block;}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:13.5px;font-weight:700;
+  padding:12px 20px;border-radius:10px;border:1px solid transparent;cursor:pointer;transition:.15s;font-family:inherit;
+}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#3d8ee0);color:#fff;box-shadow:0 8px 24px -8px var(--accent-glow);}
+.btn-primary:hover{filter:brightness(1.08);}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;filter:none;box-shadow:none;}
+.btn-ghost{background:var(--bg-elev2);color:var(--text-secondary);border-color:var(--border);}
+.btn-ghost:hover{color:var(--text-primary);border-color:var(--text-mut);}
+.btn-sm{padding:8px 13px;font-size:12px;border-radius:8px;}
+.btn-row{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+
+/* ---------- Progress ---------- */
+.progress-card{display:none;}
+.progress-card.show{display:block;}
+.progress-bar-outer{height:8px;border-radius:99px;background:var(--bg-elev2);overflow:hidden;border:1px solid var(--border-soft);}
+.progress-bar-inner{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--aqua));border-radius:99px;transition:width .25s ease;}
+.progress-pct{font-size:22px;font-weight:800;margin:12px 0 2px;}
+.progress-stage{font-size:13px;color:var(--text-secondary);}
+.stage-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:18px;}
+.stage-item{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--text-mut);padding:8px 10px;
+  border-radius:8px;background:var(--bg-elev2);border:1px solid var(--border-soft);}
+.stage-item .ico{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--border);flex:none;position:relative;}
+.stage-item.active{color:var(--text-primary);border-color:rgba(42,120,214,.4);background:var(--accent-soft);}
+.stage-item.active .ico{border-color:var(--accent);}
+.stage-item.active .ico::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--accent);animation:pulse 1s infinite;}
+.stage-item.done{color:var(--green);}
+.stage-item.done .ico{border-color:var(--green);background:var(--green);}
+.stage-item.done .ico::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+/* ---------- Results ---------- */
+.results{display:none;}
+.results.show{display:block;}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;}
+.stat-card{background:var(--bg-elev2);border:1px solid var(--border-soft);border-radius:var(--radius-sm);padding:16px 16px;}
+.stat-card .label{font-size:11px;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
+.stat-card .value{font-size:26px;font-weight:800;margin-top:6px;letter-spacing:-.5px;}
+.stat-card .value small{font-size:13px;color:var(--text-secondary);font-weight:600;}
+.stat-card .delta{font-size:11.5px;margin-top:4px;color:var(--text-mut);}
+
+.tabbar{display:flex;gap:4px;border-bottom:1px solid var(--border-soft);margin:28px 0 22px;overflow-x:auto;}
+.tabbtn{background:none;border:none;color:var(--text-secondary);font-size:13px;font-weight:700;padding:11px 16px;
+  cursor:pointer;position:relative;white-space:nowrap;font-family:inherit;}
+.tabbtn:hover{color:var(--text-primary);}
+.tabbtn.active{color:var(--text-primary);}
+.tabbtn.active::after{content:'';position:absolute;left:10px;right:10px;bottom:-1px;height:2px;background:var(--accent);border-radius:2px;}
+.tabpanel{display:none;}
+.tabpanel.active{display:block;}
+
+.dash-header{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+.dash-title{font-size:19px;font-weight:800;margin:0;}
+.dash-sub{font-size:12.5px;color:var(--text-secondary);margin:3px 0 0;}
+.panel-grid{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:300px;gap:16px;}
+.panel-grid.motion{grid-template-columns:1.1fr 1fr;grid-template-rows:repeat(3,300px);height:932px;}
+.panel-grid.motion .panel-a{grid-row:1/4;}
+@media(max-width:880px){
+  .panel-grid{grid-template-columns:1fr;}
+  .panel-grid.motion{grid-template-columns:1fr;grid-template-rows:300px repeat(3,300px);height:auto;}
+  .panel-grid.motion .panel-a{grid-row:auto;}
+}
+.panel{background:var(--bg-elev2);border:1px solid var(--border-soft);border-radius:var(--radius-sm);padding:14px 16px 10px;
+  display:flex;flex-direction:column;height:100%;min-height:0;}
+.panel-title{font-size:12.5px;font-weight:700;margin:0 0 8px;color:var(--text-primary);display:flex;align-items:center;gap:6px;}
+.panel-title .chip{width:16px;height:16px;border-radius:5px;background:var(--accent);color:#fff;font-size:10px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;flex:none;}
+.panel-note{font-size:10.5px;color:var(--text-mut);margin-top:auto;padding-top:6px;}
+.panel canvas{width:100%;flex:1;min-height:0;}
+.chart-wrap{position:relative;flex:1;min-height:0;}
+.legend-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--text-secondary);margin-top:6px;}
+.legend-dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:5px;}
+.colorbar{display:flex;align-items:center;gap:8px;font-size:10.5px;color:var(--text-mut);margin-top:6px;}
+.colorbar .ramp{flex:1;height:8px;border-radius:4px;}
+
+.tooltip-float{
+  position:fixed;pointer-events:none;background:rgba(15,20,32,.96);border:1px solid var(--border);border-radius:8px;
+  padding:8px 10px;font-size:11.5px;color:var(--text-primary);box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:200;
+  opacity:0;transition:opacity .1s;max-width:220px;
+}
+.tooltip-float b{color:var(--accent);}
+.tooltip-float .row{display:flex;justify-content:space-between;gap:10px;}
+
+.qa-toggle{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--accent);cursor:pointer;font-weight:600;margin:8px 0 4px;}
+.qa-grid{display:none;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:10px;}
+.qa-grid.open{display:grid;}
+.qa-tile{background:var(--bg-elev2);border:1px solid var(--border-soft);border-radius:8px;overflow:hidden;}
+.qa-tile img,.qa-tile canvas{width:100%;display:block;background:#000;}
+.qa-tile .cap{font-size:10.5px;color:var(--text-secondary);padding:6px 8px;}
+
+.export-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
+.export-card{background:var(--bg-elev2);border:1px solid var(--border-soft);border-radius:var(--radius-sm);padding:16px;}
+.export-card h4{margin:0 0 4px;font-size:13px;}
+.export-card p{margin:0 0 12px;font-size:11.5px;color:var(--text-secondary);}
+
+.limits{background:rgba(237,161,0,.08);border:1px solid rgba(237,161,0,.3);border-radius:var(--radius-sm);padding:16px 18px;margin-top:18px;}
+.limits h4{margin:0 0 8px;font-size:13px;color:var(--yellow);display:flex;align-items:center;gap:7px;}
+.limits ul{margin:0;padding-left:18px;font-size:12.5px;color:var(--text-secondary);}
+.limits li{margin-bottom:6px;}
+
+.toast-wrap{position:fixed;bottom:22px;right:22px;z-index:500;display:flex;flex-direction:column;gap:10px;}
+.toast{background:var(--bg-elev3);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:12.5px;
+  box-shadow:var(--shadow);display:flex;align-items:center;gap:10px;min-width:240px;animation:slideIn .25s ease;}
+.toast.error{border-color:rgba(227,73,72,.5);}
+.toast.error .dotb{background:var(--red);}
+.toast .dotb{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none;}
+@keyframes slideIn{from{transform:translateY(10px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+
+.footer{margin-top:60px;padding-top:22px;border-top:1px solid var(--border-soft);font-size:11.5px;color:var(--text-mut);
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.spinner{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" fill="#fff"/><circle cx="6" cy="7" r="1.6" fill="#fff" opacity=".85"/><circle cx="18" cy="6" r="1.3" fill="#fff" opacity=".7"/><circle cx="17" cy="17" r="2" fill="#fff" opacity=".85"/><circle cx="5" cy="17" r="1.3" fill="#fff" opacity=".6"/></svg></div>
+      <div class="brand-text"><h1>MP Detection Studio</h1><p>SonataBeat · client-side microplastic video analysis</p></div>
+    </div>
+    <div class="stepper" id="stepper">
+      <div class="step active" data-step="upload"><span class="dot">1</span>Upload</div>
+      <div class="step-sep"></div>
+      <div class="step" data-step="configure"><span class="dot">2</span>Configure</div>
+      <div class="step-sep"></div>
+      <div class="step" data-step="analyze"><span class="dot">3</span>Analyze</div>
+      <div class="step-sep"></div>
+      <div class="step" data-step="results"><span class="dot">4</span>Results</div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="section-title" style="margin-top:32px;">Detect, track &amp; characterize microplastic particles — right in your browser</div>
+  <p class="section-desc">Upload your frame sequence or a video clip. This runs the same validated pipeline as the SonataBeat MATLAB deliverable — temporal-median background modeling, illumination-rim &amp; chronic-artifact exclusion, adaptive per-frame detection, gated multi-object tracking — entirely client-side. Nothing is uploaded to a server.</p>
+
+  <div class="grid2">
+    <!-- LEFT: upload + config -->
+    <div>
+      <div class="card" id="uploadCard">
+        <div class="card-head"><h2>1 · Upload frames or video</h2><span class="badge" id="fileCountBadge">No files yet</span></div>
+        <div class="dropzone" id="dropzone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 16V4M12 4L7 9M12 4l5 5" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <h3>Drag &amp; drop frames or a video file</h3>
+          <p>Multiple JPG/PNG frames (e.g. frame_001.jpg…) <b>or</b> a single MP4/WebM/MOV clip · click to browse</p>
+          <input type="file" id="fileInput" multiple accept="image/*,video/*">
+        </div>
+        <div class="file-summary" id="fileSummary">
+          <div class="file-summary-row">
+            <img id="thumb" class="file-thumb" alt="preview">
+            <div class="file-meta">
+              <div class="name" id="fileMetaName">—</div>
+              <div class="detail" id="fileMetaDetail">—</div>
+            </div>
+            <button class="file-clear" id="clearFiles">Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="configCard">
+        <div class="card-head"><h2>2 · Configure analysis</h2><span class="sub">Defaults mirror the validated MATLAB config</span></div>
+
+        <div class="field-grid cols3">
+          <div class="field">
+            <label>Frame interval (s) <span class="info" title="Time between consecutive frames. For video, frames are resampled at this interval.">i</span></label>
+            <input type="number" id="cfgFrameInterval" value="1" min="0.01" step="0.1">
+          </div>
+          <div class="field">
+            <label>Calibration (µm/px) <span class="info" title="Optional. Leave blank to report sizes/speeds in pixel units.">i</span></label>
+            <input type="text" id="cfgUmPerPixel" placeholder="none">
+          </div>
+          <div class="field">
+            <label>Max frames analyzed <span class="info" title="Caps processing time in-browser. Frames beyond this are evenly subsampled.">i</span></label>
+            <input type="number" id="cfgMaxFrames" value="350" min="10" step="10">
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:16px;">
+          <label>Processing detail</label>
+          <div class="seg" id="qualitySeg">
+            <button data-q="fast">Fast (480px)</button>
+            <button data-q="balanced" class="active">Balanced (720px)</button>
+            <button data-q="precise">Precise (1080px)</button>
+          </div>
+          <span class="hint">Higher detail = sharper detection, slower in-browser processing.</span>
+        </div>
+
+        <div class="advanced-toggle" id="advToggle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Advanced detection &amp; tracking parameters
+        </div>
+        <div class="advanced-body" id="advBody">
+          <div class="field-grid cols3">
+            <div class="field"><label>Threshold percentile <span class="info" title="Adaptive per-frame background-subtraction threshold, self-calibrating against illumination drift.">i</span></label><input type="number" id="cfgPct" value="99.5" step="0.1"></div>
+            <div class="field"><label>Min. abs. threshold <span class="info" title="Floor on the gray-level difference, prevents near-zero noise floors triggering detections.">i</span></label><input type="number" id="cfgMinAbs" value="10" step="1"></div>
+            <div class="field"><label>Chronic artifact freq. <span class="info" title="Pixels firing above threshold in more than this fraction of frames are static rig features, not particles.">i</span></label><input type="number" id="cfgChronic" value="0.10" step="0.01"></div>
+            <div class="field"><label>Edge gradient percentile <span class="info" title="Percentile of background gradient magnitude used to locate the illumination-rim boundary.">i</span></label><input type="number" id="cfgEdgePct" value="97.5" step="0.1"></div>
+            <div class="field"><label>Rim exclusion width (%) <span class="info" title="Width of the excluded band around the illumination rim, as % of frame's longest side. Widen if rim artifacts persist.">i</span></label><input type="number" id="cfgEdgeWidth" value="2.3" step="0.1"></div>
+            <div class="field"><label>Min particle area (px²) <span class="info" title="Blobs smaller than this (at processing resolution) are discarded as noise.">i</span></label><input type="number" id="cfgMinArea" value="3" step="1"></div>
+            <div class="field"><label>Max particle area (px²) <span class="info" title="Blobs larger than this are discarded (likely merged clusters or artifacts).">i</span></label><input type="number" id="cfgMaxArea" value="2200" step="10"></div>
+            <div class="field"><label>Tracking gate (%) <span class="info" title="Max frame-to-frame travel allowed for a detection to join a track, as % of frame's longest side.">i</span></label><input type="number" id="cfgGate" value="5.5" step="0.1"></div>
+            <div class="field"><label>Max missed frames <span class="info" title="A track survives this many consecutive missed detections before being terminated.">i</span></label><input type="number" id="cfgMaxMissed" value="2" step="1"></div>
+            <div class="field"><label>Min track length <span class="info" title="Tracks shorter than this many detections are discarded as noise — the main defence against spurious single-frame blobs.">i</span></label><input type="number" id="cfgMinTrack" value="3" step="1"></div>
+          </div>
+          <div class="btn-row" style="margin-top:14px;">
+            <button class="btn btn-ghost btn-sm" id="resetDefaults">Reset to defaults</button>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" id="runBtn" disabled>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z"/></svg>
+            Run analysis
+          </button>
+          <button class="btn btn-ghost" id="loadDemoBtn">Try demo mode (synthetic sample)</button>
+        </div>
+      </div>
+
+      <div class="card progress-card" id="progressCard">
+        <div class="card-head"><h2>3 · Analyzing</h2><button class="btn btn-ghost btn-sm" id="cancelBtn">Cancel</button></div>
+        <div class="progress-pct" id="progressPct">0%</div>
+        <div class="progress-bar-outer"><div class="progress-bar-inner" id="progressBar"></div></div>
+        <div class="progress-stage" id="progressStage" style="margin-top:10px;">Preparing…</div>
+        <div class="stage-list" id="stageList"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: info -->
+    <div>
+      <div class="card">
+        <div class="card-head"><h2>How this works</h2></div>
+        <div style="font-size:12.5px;color:var(--text-secondary);display:flex;flex-direction:column;gap:12px;">
+          <div><b style="color:var(--text-primary);">1. Background model.</b> Per-pixel temporal median across your frames, robust to the moving particles themselves.</div>
+          <div><b style="color:var(--text-primary);">2. ROI &amp; exclusion masks.</b> Automatic field-of-view segmentation, plus two artifact-rejection stages — static "chronic" pixels and the illumination-rim boundary.</div>
+          <div><b style="color:var(--text-primary);">3. Adaptive detection.</b> Self-calibrating per-frame percentile threshold, connected-component segmentation, full shape-descriptor extraction.</div>
+          <div><b style="color:var(--text-primary);">4. Gated tracking.</b> Optimal (Hungarian) frame-to-frame assignment with constant-velocity gating and minimum-track-length confirmation.</div>
+          <div><b style="color:var(--text-primary);">5. Three dashboards.</b> Motion tracking, morphology, and spatio-temporal distribution — rendered live from your data.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>Privacy</h2></div>
+        <p style="font-size:12.5px;color:var(--text-secondary);margin:0;">All processing happens locally in your browser via JavaScript/Canvas — your frames and video are never uploaded anywhere. Closing this tab discards everything.</p>
+      </div>
+      <div class="limits">
+        <h4>⚠ Read before trusting the numbers</h4>
+        <ul>
+          <li>Detection is a visual heuristic, not a certified particle counter — validate against manual counts on a subset before reporting results.</li>
+          <li>Without a calibration reference (µm/px), all sizes and speeds are in pixel units.</li>
+          <li>An illumination-rim boundary can still produce false detections near the field-of-view edge even after exclusion — inspect the trajectory map.</li>
+          <li>The residence-time distribution is a proxy from in-frame dwell time, not a metered tracer-test RTD.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== RESULTS ===================== -->
+  <div class="results" id="results">
+    <div class="section-title" style="margin-top:46px;">Results</div>
+    <p class="section-desc" id="resultsSummarySentence">—</p>
+
+    <div class="stat-grid" id="statGrid"></div>
+
+    <div class="qa-toggle" id="qaToggle">
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>
+      Quality-assurance masks (background · ROI · exclusion)
+    </div>
+    <div class="qa-grid" id="qaGrid"></div>
+
+    <div class="tabbar" id="tabbar">
+      <button class="tabbtn active" data-tab="dash1">① Motion Tracking</button>
+      <button class="tabbtn" data-tab="dash2">② Morphology</button>
+      <button class="tabbtn" data-tab="dash3">③ Distribution</button>
+      <button class="tabbtn" data-tab="dataexport">Data &amp; Export</button>
+    </div>
+
+    <!-- Dashboard 1 -->
+    <div class="tabpanel active" id="tab-dash1">
+      <div class="dash-header">
+        <div><h3 class="dash-title">Dashboard 1 — Motion Tracking Analysis</h3><p class="dash-sub" id="d1sub">—</p></div>
+        <button class="btn btn-ghost btn-sm" data-export="dash1">Download PNG</button>
+      </div>
+      <div class="panel-grid motion">
+        <div class="panel panel-a"><p class="panel-title"><span class="chip">A</span>Particle trajectories</p>
+          <div class="chart-wrap"><canvas id="cvTraj"></canvas></div>
+          <div class="legend-row"><span><span class="legend-dot" style="background:#0ca30c;"></span>start</span><span><span class="legend-dot" style="background:#e34948;"></span>end</span></div>
+        </div>
+        <div class="panel"><p class="panel-title"><span class="chip">B</span>Tracking activity over time</p><div class="chart-wrap"><canvas id="cvActivity"></canvas></div></div>
+        <div class="panel"><p class="panel-title"><span class="chip">C</span>Particle velocity distribution</p><div class="chart-wrap"><canvas id="cvSpeed"></canvas></div></div>
+        <div class="panel"><p class="panel-title"><span class="chip">D</span>Path shape — straight vs. meandering</p><div class="chart-wrap"><canvas id="cvPathShape"></canvas></div>
+          <div class="colorbar"><span>slow</span><div class="ramp" id="rampD"></div><span>fast</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard 2 -->
+    <div class="tabpanel" id="tab-dash2">
+      <div class="dash-header">
+        <div><h3 class="dash-title">Dashboard 2 — Morphology &amp; Particle Shape Analysis</h3><p class="dash-sub" id="d2sub">—</p></div>
+        <button class="btn btn-ghost btn-sm" data-export="dash2">Download PNG</button>
+      </div>
+      <div class="panel-grid">
+        <div class="panel"><p class="panel-title"><span class="chip">A</span>Shape vs. size</p><div class="chart-wrap"><canvas id="cvShapeSize"></canvas></div>
+          <div class="colorbar"><span>round</span><div class="ramp" id="rampA2"></div><span>elongated</span></div>
+        </div>
+        <div class="panel"><p class="panel-title"><span class="chip">B</span>Eccentricity distribution</p><div class="chart-wrap"><canvas id="cvEcc"></canvas></div></div>
+        <div class="panel"><p class="panel-title"><span class="chip">C</span>Solidity distribution</p><div class="chart-wrap"><canvas id="cvSolidity"></canvas></div></div>
+        <div class="panel"><p class="panel-title"><span class="chip">D</span>Aspect-ratio distribution</p><div class="chart-wrap"><canvas id="cvAspect"></canvas></div>
+          <div class="panel-note">≈1 = fragment-like · ≫1 = fiber-like</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard 3 -->
+    <div class="tabpanel" id="tab-dash3">
+      <div class="dash-header">
+        <div><h3 class="dash-title">Dashboard 3 — Distribution of Particles</h3><p class="dash-sub" id="d3sub">—</p></div>
+        <button class="btn btn-ghost btn-sm" data-export="dash3">Download PNG</button>
+      </div>
+      <div class="panel-grid">
+        <div class="panel"><p class="panel-title"><span class="chip">A</span>Size distribution</p><div class="chart-wrap"><canvas id="cvSize"></canvas></div></div>
+        <div class="panel"><p class="panel-title"><span class="chip">B</span>Concentration over time</p><div class="chart-wrap"><canvas id="cvConc"></canvas></div></div>
+        <div class="panel"><p class="panel-title"><span class="chip">C</span>Spatial distribution across FOV</p><div class="chart-wrap"><canvas id="cvHeat"></canvas></div>
+          <div class="colorbar"><span>low</span><div class="ramp" id="rampC3"></div><span>high density</span></div>
+        </div>
+        <div class="panel"><p class="panel-title"><span class="chip">D</span>Residence-time-distribution proxy</p><div class="chart-wrap"><canvas id="cvRtd"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- Data / export -->
+    <div class="tabpanel" id="tab-dataexport">
+      <div class="dash-header"><div><h3 class="dash-title">Data &amp; export</h3><p class="dash-sub">Download the underlying tables for further analysis in MATLAB, Python, or Excel.</p></div></div>
+      <div class="export-grid">
+        <div class="export-card"><h4>Per-frame detections</h4><p>Every confirmed &amp; rejected detection with full shape descriptors.</p><button class="btn btn-ghost btn-sm" id="expDet">Download CSV</button></div>
+        <div class="export-card"><h4>Track summary</h4><p>One row per track: path length, displacement, mean speed, lifetime.</p><button class="btn btn-ghost btn-sm" id="expTrack">Download CSV</button></div>
+        <div class="export-card"><h4>Frame metrics</h4><p>Per-frame confirmed count &amp; concentration time series.</p><button class="btn btn-ghost btn-sm" id="expFrame">Download CSV</button></div>
+        <div class="export-card"><h4>Run summary</h4><p>Configuration &amp; headline statistics as JSON.</p><button class="btn btn-ghost btn-sm" id="expJson">Download JSON</button></div>
+      </div>
+      <div class="limits">
+        <h4>⚠ Known limitations (same as the MATLAB deliverable)</h4>
+        <ul>
+          <li><b>Rim artifacts are the dominant failure mode.</b> If the trajectory map shows detections hugging the field-of-view edge, widen the rim-exclusion width and re-run.</li>
+          <li><b>No ground truth</b> — thresholds are tuned for visual plausibility, not validated precision/recall.</li>
+          <li><b>Illumination drift</b> is compensated per-frame, but very dim/bright stretches merit manual review.</li>
+          <li><b>RTD is a proxy</b> from confirmed-track dwell time in the fixed field of view, not a metered tracer-test RTD.</li>
+        </ul>
+      </div>
+      <div class="btn-row"><button class="btn btn-ghost" id="newAnalysisBtn">Start a new analysis</button></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>MP Detection Studio — client-side reimplementation of the validated SonataBeat MATLAB pipeline.</span>
+    <span id="runFooterNote"></span>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+<div class="tooltip-float" id="tooltipFloat"></div>
+
+<script>
+'use strict';
+/* =========================================================================
+   0. PALETTE  (validated categorical + sequential palette)
+   ========================================================================= */
+const PAL = {
+  blue:'#2a78d6', orange:'#eb6834', aqua:'#1baf7a', yellow:'#eda100',
+  magenta:'#e87ba4', violet:'#4a3aa7', red:'#e34948', green:'#0ca30c',
+  seqBlue:['#cde2fb','#86b6ef','#3987e5','#1c5cab','#0d366b'],
+  grid:'rgba(255,255,255,.07)', axis:'rgba(255,255,255,.22)', text:'#9aa7c4', textStrong:'#eef2fb'
+};
+function hexToRgb(hex){ const n=parseInt(hex.slice(1),16); return [ (n>>16)&255,(n>>8)&255,n&255 ]; }
+function lerpColor(c1,c2,t){ const a=hexToRgb(c1), b=hexToRgb(c2); return `rgb(${Math.round(a[0]+(b[0]-a[0])*t)},${Math.round(a[1]+(b[1]-a[1])*t)},${Math.round(a[2]+(b[2]-a[2])*t)})`; }
+function seqBlueAt(t){ // t in [0,1]
+  t = Math.max(0,Math.min(1,t));
+  const stops = PAL.seqBlue; const n = stops.length-1;
+  const seg = Math.min(n-1, Math.floor(t*n));
+  const localT = t*n - seg;
+  return lerpColor(stops[seg], stops[seg+1], localT);
+}
+function cssGradientSeqBlue(){ return `linear-gradient(90deg, ${PAL.seqBlue.join(',')})`; }
+document.querySelectorAll('.ramp').forEach(el=> el.style.background = cssGradientSeqBlue());
+
+/* =========================================================================
+   1. TOASTS
+   ========================================================================= */
+function toast(msg, type){
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast' + (type==='error'?' error':'');
+  el.innerHTML = `<span class="dotb"></span><span>${msg}</span>`;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(),300); }, 4200);
+}
+
+/* =========================================================================
+   2. GENERIC UTILITIES
+   ========================================================================= */
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+function mean(arr){ return arr.length? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
+function naturalSort(a,b){
+  const re=/(\d+)/g;
+  const ax=a.name.split(re), bx=b.name.split(re);
+  const n=Math.max(ax.length,bx.length);
+  for(let i=0;i<n;i++){
+    const av=ax[i]||'', bv=bx[i]||'';
+    if(av===bv) continue;
+    const an=parseInt(av,10), bn=parseInt(bv,10);
+    if(!isNaN(an)&&!isNaN(bn)) return an-bn;
+    return av<bv?-1:1;
+  }
+  return 0;
+}
+async function yieldUI(){ return new Promise(r=>setTimeout(r,0)); }
+function niceTicks(min,max,count){
+  if(min===max){ min-=1; max+=1; }
+  const span = max-min;
+  const step0 = span/count;
+  const mag = Math.pow(10, Math.floor(Math.log10(step0)));
+  const norm = step0/mag;
+  let step;
+  if(norm<1.5) step=1*mag; else if(norm<3) step=2*mag; else if(norm<7) step=5*mag; else step=10*mag;
+  const niceMin = Math.floor(min/step)*step;
+  const niceMax = Math.ceil(max/step)*step;
+  const ticks=[];
+  for(let v=niceMin; v<=niceMax+1e-9; v+=step) ticks.push(+v.toFixed(10));
+  return {ticks, min:niceMin, max:niceMax};
+}
+function fmtNum(v){
+  if(Math.abs(v)>=1000) return v.toFixed(0);
+  if(Math.abs(v)>=10) return v.toFixed(1);
+  return v.toFixed(2).replace(/\.?0+$/,'')||'0';
+}
+
+/* =========================================================================
+   3. VALIDATED CORE ALGORITHMS  (background, ROI, morphology, regionprops,
+      Hungarian assignment) -- unit-verified against brute force / synthetic
+      shapes before integration.
+   ========================================================================= */
+
+function rgbaToGray(imgData){
+  const {data,width,height} = imgData;
+  const out = new Uint8ClampedArray(width*height);
+  for(let i=0,p=0;i<data.length;i+=4,p++){
+    out[p] = (0.299*data[i] + 0.587*data[i+1] + 0.114*data[i+2]) | 0;
+  }
+  return out;
+}
+
+function histogramOf(arr, mask){
+  const hist = new Int32Array(256);
+  if(mask){ for(let i=0;i<arr.length;i++) if(mask[i]) hist[arr[i]]++; }
+  else { for(let i=0;i<arr.length;i++) hist[arr[i]]++; }
+  return hist;
+}
+function percentileFromHistogram(hist, total, pct){
+  if(total<=0) return 0;
+  const target = (pct/100)*total;
+  let cum=0;
+  for(let v=0; v<256; v++){ cum+=hist[v]; if(cum>=target) return v; }
+  return 255;
+}
+function otsuThreshold(hist,total){
+  let sum=0; for(let i=0;i<256;i++) sum+=i*hist[i];
+  let sumB=0, wB=0, maxVar=-1, threshold=127;
+  for(let t=0;t<256;t++){
+    wB+=hist[t]; sumB+=t*hist[t];
+    if(wB===0) continue;
+    const wF=total-wB; if(wF===0) break;
+    const mB=sumB/wB, mF=(sum-sumB)/wF;
+    const v=wB*wF*(mB-mF)*(mB-mF);
+    if(v>maxVar){ maxVar=v; threshold=t; }
+  }
+  return threshold;
+}
+
+// Per-pixel temporal median via counting sort (frames: array of Uint8ClampedArray, length w*h each)
+async function computeBackgroundMedian(frames, w, h, onProgress){
+  const n = frames.length;
+  const bg = new Uint8Array(w*h);
+  const total = w*h;
+  const hist = new Int32Array(256);
+  const chunk = Math.max(1000, Math.floor(20000/Math.max(1,n/50)));
+  for(let start=0; start<total; start+=chunk){
+    const end = Math.min(total, start+chunk);
+    for(let idx=start; idx<end; idx++){
+      hist.fill(0);
+      for(let f=0; f<n; f++) hist[frames[f][idx]]++;
+      let cum=0, median=0;
+      const targetLow = Math.floor((n-1)/2), targetHigh = Math.ceil((n-1)/2);
+      let vLow=-1, vHigh=-1;
+      for(let v=0; v<256; v++){
+        cum+=hist[v];
+        if(vLow<0 && cum>targetLow) vLow=v;
+        if(vHigh<0 && cum>targetHigh){ vHigh=v; break; }
+      }
+      median = Math.round(((vLow<0?0:vLow)+(vHigh<0?vLow:vHigh))/2);
+      bg[idx]=median;
+    }
+    if(onProgress) onProgress(end/total);
+    await yieldUI();
+  }
+  return bg;
+}
+
+// Separable box dilation/erosion (validated against synthetic shapes)
+function dilateErode(mask, w, h, radius, isDilate){
+  if(radius<=0) return mask.slice();
+  const tmp = new Uint8Array(w*h);
+  const out = new Uint8Array(w*h);
+  for(let y=0;y<h;y++){
+    const rowOff=y*w;
+    for(let x=0;x<w;x++){
+      let v = isDilate?0:1;
+      const lo=Math.max(0,x-radius), hi=Math.min(w-1,x+radius);
+      if(!isDilate && (x-radius<0 || x+radius>=w)) v=0;
+      for(let xx=lo; xx<=hi; xx++){ const m=mask[rowOff+xx]; v = isDilate ? (v|m) : (v&m); }
+      tmp[rowOff+x]=v;
+    }
+  }
+  for(let x=0;x<w;x++){
+    for(let y=0;y<h;y++){
+      let v = isDilate?0:1;
+      const lo=Math.max(0,y-radius), hi=Math.min(h-1,y+radius);
+      if(!isDilate && (y-radius<0 || y+radius>=h)) v=0;
+      for(let yy=lo; yy<=hi; yy++){ const m=tmp[yy*w+x]; v = isDilate ? (v|m) : (v&m); }
+      out[y*w+x]=v;
+    }
+  }
+  return out;
+}
+
+function sobelGradientMagnitude(gray,w,h){
+  const mag = new Float32Array(w*h);
+  const at=(x,y)=>{ x=x<0?0:(x>=w?w-1:x); y=y<0?0:(y>=h?h-1:y); return gray[y*w+x]; };
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x++){
+      const gx = -at(x-1,y-1)-2*at(x-1,y)-at(x-1,y+1) + at(x+1,y-1)+2*at(x+1,y)+at(x+1,y+1);
+      const gy = -at(x-1,y-1)-2*at(x,y-1)-at(x+1,y-1) + at(x-1,y+1)+2*at(x,y+1)+at(x+1,y+1);
+      mag[y*w+x] = Math.hypot(gx,gy);
+    }
+  }
+  return mag;
+}
+
+function connectedComponents(mask,w,h){
+  const labels = new Int32Array(w*h);
+  let numLabels=0;
+  const stack = new Int32Array(w*h);
+  for(let start=0; start<w*h; start++){
+    if(mask[start] && labels[start]===0){
+      numLabels++;
+      let sp=0; stack[sp++]=start; labels[start]=numLabels;
+      while(sp>0){
+        const idx=stack[--sp];
+        const x=idx%w, y=(idx/w)|0;
+        for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){
+          if(dx===0&&dy===0) continue;
+          const nx=x+dx, ny=y+dy;
+          if(nx<0||nx>=w||ny<0||ny>=h) continue;
+          const nidx=ny*w+nx;
+          if(mask[nidx] && labels[nidx]===0){ labels[nidx]=numLabels; stack[sp++]=nidx; }
+        }
+      }
+    }
+  }
+  return {labels, numLabels};
+}
+function largestComponentMask(labels,numLabels,w,h){
+  if(numLabels===0) return new Uint8Array(w*h);
+  const counts = new Int32Array(numLabels+1);
+  for(let i=0;i<labels.length;i++) if(labels[i]>0) counts[labels[i]]++;
+  let best=1; for(let l=2;l<=numLabels;l++) if(counts[l]>counts[best]) best=l;
+  const out = new Uint8Array(w*h);
+  for(let i=0;i<labels.length;i++) out[i] = labels[i]===best ? 1 : 0;
+  return out;
+}
+
+function traceBoundaryMoore(mask,w,h){
+  const dirs=[[0,-1],[1,-1],[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1]];
+  const at=(x,y)=>{ if(x<0||x>=w||y<0||y>=h) return 0; return mask[y*w+x]; };
+  let sx=-1, sy=-1;
+  outer: for(let y=0;y<h;y++) for(let x=0;x<w;x++){ if(at(x,y)){ sx=x; sy=y; break outer; } }
+  if(sx===-1) return [];
+  const boundary=[[sx,sy]];
+  let curX=sx, curY=sy, backDir=6;
+  const maxIter = w*h*8+16;
+  let it=0;
+  while(it++<maxIter){
+    let found=false;
+    for(let k=1;k<=8;k++){
+      const dIdx=(backDir+k)%8; const [dx,dy]=dirs[dIdx];
+      const nx=curX+dx, ny=curY+dy;
+      if(at(nx,ny)){ curX=nx; curY=ny; backDir=(dIdx+4)%8; found=true; break; }
+    }
+    if(!found) break;
+    if(curX===sx && curY===sy) break;
+    boundary.push([curX,curY]);
+    if(boundary.length>w*h+4) break;
+  }
+  return boundary;
+}
+function perimeterFromBoundary(boundary){
+  if(boundary.length===0) return 0;
+  if(boundary.length===1) return 1;
+  let p=0;
+  for(let i=0;i<boundary.length;i++){
+    const [x1,y1]=boundary[i], [x2,y2]=boundary[(i+1)%boundary.length];
+    p+=Math.hypot(x2-x1,y2-y1);
+  }
+  return p;
+}
+function monotoneChainHull(points){
+  const pts = points.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+  if(pts.length<3) return pts;
+  const cross=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]);
+  const lower=[]; for(const p of pts){ while(lower.length>=2 && cross(lower[lower.length-2],lower[lower.length-1],p)<=0) lower.pop(); lower.push(p); }
+  const upper=[]; for(let i=pts.length-1;i>=0;i--){ const p=pts[i]; while(upper.length>=2 && cross(upper[upper.length-2],upper[upper.length-1],p)<=0) upper.pop(); upper.push(p); }
+  upper.pop(); lower.pop();
+  return lower.concat(upper);
+}
+function polygonArea(poly){
+  if(poly.length<3) return 0;
+  let a=0;
+  for(let i=0;i<poly.length;i++){ const [x1,y1]=poly[i], [x2,y2]=poly[(i+1)%poly.length]; a+=x1*y2-x2*y1; }
+  return Math.abs(a)/2;
+}
+
+// Full region-property extraction for every labeled blob in one frame.
+function regionProps(labels,numLabels,w,h,diffImg){
+  const groups = Array.from({length:numLabels+1},()=>[]);
+  for(let idx=0; idx<w*h; idx++){ const l=labels[idx]; if(l>0) groups[l].push(idx); }
+  const results=[];
+  for(let l=1;l<=numLabels;l++){
+    const px = groups[l];
+    const area = px.length;
+    if(area===0) continue;
+    let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity, sx=0, sy=0, contrastSum=0;
+    for(const idx of px){
+      const x=idx%w, y=(idx/w)|0;
+      if(x<minX)minX=x; if(x>maxX)maxX=x; if(y<minY)minY=y; if(y>maxY)maxY=y;
+      sx+=x; sy+=y;
+      if(diffImg) contrastSum += diffImg[idx];
+    }
+    const cx=sx/area, cy=sy/area;
+    const lw=maxX-minX+3, lh=maxY-minY+3;
+    const localMask = new Uint8Array(lw*lh);
+    for(const idx of px){ const x=idx%w-minX+1, y=((idx/w)|0)-minY+1; localMask[y*lw+x]=1; }
+    const boundaryLocal = traceBoundaryMoore(localMask, lw, lh);
+    const perim = perimeterFromBoundary(boundaryLocal);
+    const boundaryGlobal = boundaryLocal.map(([x,y])=>[x+minX-1, y+minY-1]);
+
+    let mu20=0, mu02=0, mu11=0;
+    for(const idx of px){ const x=idx%w, y=(idx/w)|0; const dx=x-cx, dy=y-cy; mu20+=dx*dx; mu02+=dy*dy; mu11+=dx*dy; }
+    mu20/=area; mu02/=area; mu11/=area;
+    const aTerm=mu20+mu02, bTerm=Math.sqrt((mu20-mu02)**2+4*mu11*mu11);
+    const lambda1=Math.max((aTerm+bTerm)/2,1e-6), lambda2=Math.max((aTerm-bTerm)/2,0);
+    const majorAxis=4*Math.sqrt(lambda1), minorAxis=4*Math.sqrt(lambda2);
+    const eccentricity = lambda1>0 ? Math.sqrt(Math.max(0,1-lambda2/lambda1)) : 0;
+    const orientationDeg = 0.5*Math.atan2(2*mu11, mu20-mu02) * 180/Math.PI;
+    const equivDiameter = Math.sqrt(4*area/Math.PI);
+    const circularity = Math.min(1, 4*Math.PI*area/((perim*perim)||1));
+    const hullPts = boundaryGlobal.length>=3 ? boundaryGlobal : px.map(idx=>[idx%w,(idx/w)|0]);
+    const hull = monotoneChainHull(hullPts);
+    const hullArea = Math.max(polygonArea(hull), area*0.999);
+    const solidity = Math.min(1, area/hullArea);
+    results.push({
+      cx, cy, areaPx:area, equivDiameterPx:equivDiameter, perimeterPx:perim,
+      circularity, majorAxisPx:majorAxis, minorAxisPx:minorAxis, eccentricity,
+      solidity, orientationDeg, meanContrast: diffImg? contrastSum/area : 0
+    });
+  }
+  return results;
+}
+
+// Hungarian (Kuhn-Munkres) assignment, O(n^3), verified against brute force for n<=5 and rectangular gating.
+function hungarianAssign(costMatrixIn){
+  const nRows = costMatrixIn.length;
+  const nCols = nRows>0 ? costMatrixIn[0].length : 0;
+  const n = Math.max(nRows,nCols);
+  if(n===0) return [];
+  const BIG=1e9;
+  const cost=[];
+  for(let i=0;i<n;i++){
+    const row = new Array(n).fill(BIG);
+    if(i<nRows) for(let j=0;j<nCols;j++) row[j]=costMatrixIn[i][j];
+    cost.push(row);
+  }
+  const u=new Array(n+1).fill(0), v=new Array(n+1).fill(0), p=new Array(n+1).fill(0), way=new Array(n+1).fill(0);
+  for(let i=1;i<=n;i++){
+    p[0]=i; let j0=0;
+    const minv=new Array(n+1).fill(Infinity), used=new Array(n+1).fill(false);
+    do{
+      used[j0]=true;
+      const i0=p[j0]; let delta=Infinity, j1=-1;
+      for(let j=1;j<=n;j++){
+        if(!used[j]){
+          const cur = cost[i0-1][j-1]-u[i0]-v[j];
+          if(cur<minv[j]){ minv[j]=cur; way[j]=j0; }
+          if(minv[j]<delta){ delta=minv[j]; j1=j; }
+        }
+      }
+      for(let j=0;j<=n;j++){ if(used[j]){ u[p[j]]+=delta; v[j]-=delta; } else { minv[j]-=delta; } }
+      j0=j1;
+    } while(p[j0]!==0);
+    do{ const j1=way[j0]; p[j0]=p[j1]; j0=j1; } while(j0!==0);
+  }
+  const rowAssign = new Array(nRows).fill(-1);
+  for(let j=1;j<=n;j++) if(p[j]!==0 && p[j]-1<nRows && j-1<nCols) rowAssign[p[j]-1]=j-1;
+  return rowAssign;
+}
+
+/* =========================================================================
+   4. STATE
+   ========================================================================= */
+const state = {
+  files: [], fileKind:null, // 'images' | 'video'
+  running:false, cancelled:false,
+  quality:'balanced',
+  results:null
+};
+const QUALITY_DIM = { fast:480, balanced:720, precise:1080 };
+
+/* =========================================================================
+   5. UI WIRING — upload
+   ========================================================================= */
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const fileSummary = document.getElementById('fileSummary');
+const fileCountBadge = document.getElementById('fileCountBadge');
+const runBtn = document.getElementById('runBtn');
+
+['dragenter','dragover'].forEach(ev=> dropzone.addEventListener(ev, e=>{ e.preventDefault(); dropzone.classList.add('drag'); }));
+['dragleave','drop'].forEach(ev=> dropzone.addEventListener(ev, e=>{ e.preventDefault(); dropzone.classList.remove('drag'); }));
+dropzone.addEventListener('drop', e=>{ handleFiles(e.dataTransfer.files); });
+dropzone.addEventListener('click', ()=> fileInput.click());
+fileInput.addEventListener('change', e=> handleFiles(e.target.files));
+document.getElementById('clearFiles').addEventListener('click', (e)=>{ e.stopPropagation(); resetFiles(); });
+
+function resetFiles(){
+  state.files=[]; state.fileKind=null;
+  fileSummary.classList.remove('show');
+  fileCountBadge.textContent='No files yet'; fileCountBadge.classList.remove('ok');
+  runBtn.disabled = true;
+  setStep('upload');
+}
+
+async function handleFiles(fileList){
+  const files = Array.from(fileList);
+  if(!files.length) return;
+  const videoFile = files.find(f=>f.type.startsWith('video/'));
+  const imageFiles = files.filter(f=>f.type.startsWith('image/'));
+  if(videoFile){
+    state.files=[videoFile]; state.fileKind='video';
+    fileCountBadge.textContent = '1 video file'; fileCountBadge.classList.add('ok');
+    const url = URL.createObjectURL(videoFile);
+    document.getElementById('thumb').src = ''; // filled after metadata loads
+    const v = document.createElement('video'); v.src = url; v.muted=true;
+    v.onloadeddata = ()=>{
+      const c = document.createElement('canvas'); c.width=120; c.height=90;
+      c.getContext('2d').drawImage(v,0,0,120,90);
+      document.getElementById('thumb').src = c.toDataURL();
+    };
+    v.currentTime = 0.1;
+    document.getElementById('fileMetaName').textContent = videoFile.name;
+    document.getElementById('fileMetaDetail').textContent = `${(videoFile.size/1e6).toFixed(1)} MB · video`;
+  } else if(imageFiles.length){
+    imageFiles.sort(naturalSort);
+    state.files = imageFiles; state.fileKind='images';
+    fileCountBadge.textContent = `${imageFiles.length} frame${imageFiles.length>1?'s':''}`; fileCountBadge.classList.add('ok');
+    const url = URL.createObjectURL(imageFiles[0]);
+    document.getElementById('thumb').src = url;
+    document.getElementById('fileMetaName').textContent = imageFiles[0].name + (imageFiles.length>1?` (+${imageFiles.length-1} more)`:'');
+    const totalMB = imageFiles.reduce((a,f)=>a+f.size,0)/1e6;
+    document.getElementById('fileMetaDetail').textContent = `${imageFiles.length} images · ${totalMB.toFixed(1)} MB total`;
+  } else {
+    toast('Please upload image frames or a video file.', 'error'); return;
+  }
+  fileSummary.classList.add('show');
+  runBtn.disabled=false;
+  setStep('configure');
+}
+
+document.getElementById('qualitySeg').addEventListener('click', e=>{
+  const btn = e.target.closest('button'); if(!btn) return;
+  document.querySelectorAll('#qualitySeg button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); state.quality = btn.dataset.q;
+});
+document.getElementById('advToggle').addEventListener('click', ()=>{
+  document.getElementById('advToggle').classList.toggle('open');
+  document.getElementById('advBody').classList.toggle('open');
+});
+const DEFAULTS = { frameInterval:1, umPerPixel:'', maxFrames:350, pct:99.5, minAbs:10, chronic:0.10, edgePct:97.5, edgeWidth:2.3, minArea:3, maxArea:2200, gate:5.5, maxMissed:2, minTrack:3 };
+document.getElementById('resetDefaults').addEventListener('click', ()=>{
+  document.getElementById('cfgFrameInterval').value=DEFAULTS.frameInterval;
+  document.getElementById('cfgUmPerPixel').value=DEFAULTS.umPerPixel;
+  document.getElementById('cfgMaxFrames').value=DEFAULTS.maxFrames;
+  document.getElementById('cfgPct').value=DEFAULTS.pct;
+  document.getElementById('cfgMinAbs').value=DEFAULTS.minAbs;
+  document.getElementById('cfgChronic').value=DEFAULTS.chronic;
+  document.getElementById('cfgEdgePct').value=DEFAULTS.edgePct;
+  document.getElementById('cfgEdgeWidth').value=DEFAULTS.edgeWidth;
+  document.getElementById('cfgMinArea').value=DEFAULTS.minArea;
+  document.getElementById('cfgMaxArea').value=DEFAULTS.maxArea;
+  document.getElementById('cfgGate').value=DEFAULTS.gate;
+  document.getElementById('cfgMaxMissed').value=DEFAULTS.maxMissed;
+  document.getElementById('cfgMinTrack').value=DEFAULTS.minTrack;
+  toast('Parameters reset to defaults.');
+});
+
+function setStep(name){
+  document.querySelectorAll('.step').forEach(s=>{
+    s.classList.remove('active','done');
+    const order=['upload','configure','analyze','results'];
+    if(order.indexOf(s.dataset.step) < order.indexOf(name)) s.classList.add('done');
+    if(s.dataset.step===name) s.classList.add('active');
+  });
+}
+
+/* =========================================================================
+   6. PIPELINE ORCHESTRATION
+   ========================================================================= */
+const progressCard = document.getElementById('progressCard');
+const progressBar = document.getElementById('progressBar');
+const progressPct = document.getElementById('progressPct');
+const progressStage = document.getElementById('progressStage');
+const stageListEl = document.getElementById('stageList');
+const STAGES = [
+  {key:'ingest', label:'Loading frames', weight:15},
+  {key:'bg', label:'Background model', weight:15},
+  {key:'roi', label:'Field-of-view detection', weight:6},
+  {key:'excl', label:'Exclusion masks', weight:20},
+  {key:'detect', label:'Particle detection', weight:24},
+  {key:'track', label:'Multi-object tracking', weight:12},
+  {key:'render', label:'Rendering dashboards', weight:8},
+];
+let stageBase = {}; (function(){ let acc=0; STAGES.forEach(s=>{ stageBase[s.key]=acc; acc+=s.weight; }); })();
+function initStageList(){
+  stageListEl.innerHTML = STAGES.map(s=>`<div class="stage-item" id="stage-${s.key}"><span class="ico"></span>${s.label}</div>`).join('');
+}
+function setStageActive(key){
+  STAGES.forEach(s=>{
+    const el = document.getElementById('stage-'+s.key);
+    el.classList.remove('active');
+    if(stageBase[s.key] < stageBase[key]) el.classList.add('done');
+  });
+  document.getElementById('stage-'+key).classList.add('active');
+}
+function setStageDone(key){ document.getElementById('stage-'+key).classList.remove('active'); document.getElementById('stage-'+key).classList.add('done'); }
+function setProgress(stageKey, localFrac, label){
+  const s = STAGES.find(x=>x.key===stageKey);
+  const pct = clamp(stageBase[stageKey] + s.weight*clamp(localFrac,0,1), 0, 100);
+  progressBar.style.width = pct.toFixed(1)+'%';
+  progressPct.textContent = Math.round(pct)+'%';
+  if(label) progressStage.textContent = label;
+  setStageActive(stageKey);
+}
+
+function readConfig(){
+  const um = document.getElementById('cfgUmPerPixel').value.trim();
+  return {
+    frameIntervalS: parseFloat(document.getElementById('cfgFrameInterval').value)||1,
+    umPerPixel: um? parseFloat(um) : null,
+    maxFrames: parseInt(document.getElementById('cfgMaxFrames').value)||350,
+    pctThresh: parseFloat(document.getElementById('cfgPct').value)||99.5,
+    minAbsThresh: parseFloat(document.getElementById('cfgMinAbs').value)||10,
+    chronicFreqThresh: parseFloat(document.getElementById('cfgChronic').value)||0.10,
+    edgeGradPercentile: parseFloat(document.getElementById('cfgEdgePct').value)||97.5,
+    edgeWidthPct: parseFloat(document.getElementById('cfgEdgeWidth').value)||2.3,
+    minAreaPx: parseFloat(document.getElementById('cfgMinArea').value)||3,
+    maxAreaPx: parseFloat(document.getElementById('cfgMaxArea').value)||2200,
+    gatePct: parseFloat(document.getElementById('cfgGate').value)||5.5,
+    maxMissedFrames: parseInt(document.getElementById('cfgMaxMissed').value)||2,
+    minTrackLength: parseInt(document.getElementById('cfgMinTrack').value)||3,
+    maxDim: QUALITY_DIM[state.quality]||720,
+  };
+}
+
+document.getElementById('runBtn').addEventListener('click', ()=> runPipeline(false));
+document.getElementById('loadDemoBtn').addEventListener('click', ()=> runPipeline(true));
+document.getElementById('cancelBtn').addEventListener('click', ()=>{ state.cancelled=true; });
+document.getElementById('newAnalysisBtn').addEventListener('click', ()=>{
+  document.getElementById('results').classList.remove('show');
+  window.scrollTo({top:0, behavior:'smooth'});
+  setStep('upload');
+});
+
+async function runPipeline(demo){
+  if(state.running) return;
+  state.running=true; state.cancelled=false;
+  runBtn.disabled=true;
+  progressCard.classList.add('show');
+  initStageList();
+  setStep('analyze');
+  progressCard.scrollIntoView({behavior:'smooth', block:'center'});
+  const cfg = readConfig();
+  try{
+    let frames, w, h, thumbBg;
+    if(demo){
+      setProgress('ingest',0,'Generating synthetic demo sequence…');
+      ({frames,w,h} = await generateSyntheticFrames(cfg, p=>setProgress('ingest',p)));
+    } else {
+      ({frames,w,h} = await ingestFrames(cfg, p=>setProgress('ingest',p)));
+    }
+    if(state.cancelled) throw new Error('cancelled');
+    setStageDone('ingest');
+
+    setProgress('bg',0,`Building background model from ${frames.length} frames…`);
+    const bg = await computeBackgroundMedian(frames,w,h, p=>setProgress('bg',p));
+    if(state.cancelled) throw new Error('cancelled');
+    setStageDone('bg');
+
+    setProgress('roi',0.2,'Segmenting field of view…');
+    const roi = estimateROI(bg,w,h);
+    await yieldUI();
+    setStageDone('roi');
+
+    setProgress('excl',0,'Accumulating chronic-artifact frequency map…');
+    const excl = await buildExclusionMasks(frames, bg, roi.mask, cfg, w, h, p=>setProgress('excl',p));
+    if(state.cancelled) throw new Error('cancelled');
+    setStageDone('excl');
+
+    setProgress('detect',0,'Detecting particles frame by frame…');
+    const allDet = await detectAllFrames(frames, bg, excl.validMask, cfg, w, h, p=>setProgress('detect',p));
+    if(state.cancelled) throw new Error('cancelled');
+    setStageDone('detect');
+
+    setProgress('track',0,'Running gated multi-object tracking…');
+    const {detTable, trackTable} = await trackParticles(allDet, frames.length, cfg, w, h, p=>setProgress('track',p));
+    if(state.cancelled) throw new Error('cancelled');
+    setStageDone('track');
+
+    setProgress('render',0.1,'Computing metrics & rendering dashboards…');
+    const frameMetrics = computeFrameMetrics(detTable, frames.length, roi.areaPx, cfg);
+    const bgCanvas = grayToCanvas(bg,w,h);
+
+    state.results = {detTable, trackTable, frameMetrics, bg, bgCanvas, roi, excl, w, h, cfg, nFrames:frames.length};
+    // Show the results container BEFORE drawing into any canvas: canvases sized
+    // while an ancestor is display:none measure 0 and fall back to placeholder
+    // dimensions, so visibility must be established first.
+    document.getElementById('results').classList.add('show');
+    setStep('results');
+    await yieldUI();
+    renderResults(state.results);
+    setStageDone('render');
+    setProgress('render',1,'Done.');
+    await yieldUI();
+
+    document.getElementById('results').scrollIntoView({behavior:'smooth'});
+    toast('Analysis complete.');
+  } catch(err){
+    if(err.message==='cancelled'){ toast('Analysis cancelled.','error'); setStep('configure'); }
+    else { console.error(err); toast('Something went wrong: '+err.message, 'error'); setStep('configure'); }
+  } finally {
+    state.running=false; runBtn.disabled=false; progressCard.classList.remove('show');
+  }
+}
+
+/* ---- Frame ingestion (images or video), downscaled to processing resolution ---- */
+async function ingestFrames(cfg, onProgress){
+  if(state.fileKind==='images'){
+    let files = state.files;
+    let stride = 1;
+    if(files.length > cfg.maxFrames) stride = files.length/cfg.maxFrames;
+    const indices = [];
+    for(let t=0; t<files.length; t+=stride) indices.push(Math.floor(t));
+    const uniqIdx = [...new Set(indices)].filter(i=>i<files.length);
+
+    // determine target dims from first image
+    const firstImg = await loadImageBitmap(files[0]);
+    const scale = Math.min(1, cfg.maxDim/Math.max(firstImg.width, firstImg.height));
+    const w = Math.max(2, Math.round(firstImg.width*scale));
+    const h = Math.max(2, Math.round(firstImg.height*scale));
+    const canvas = document.createElement('canvas'); canvas.width=w; canvas.height=h;
+    const ctx = canvas.getContext('2d', {willReadFrequently:true});
+
+    const frames = [];
+    const frameTimesS = [];
+    for(let k=0;k<uniqIdx.length;k++){
+      const idx = uniqIdx[k];
+      const bmp = idx===0 ? firstImg : await loadImageBitmap(files[idx]);
+      ctx.clearRect(0,0,w,h);
+      ctx.drawImage(bmp,0,0,w,h);
+      const imgData = ctx.getImageData(0,0,w,h);
+      frames.push(rgbaToGray(imgData));
+      frameTimesS.push(idx*cfg.frameIntervalS);
+      if(bmp.close) bmp.close();
+      onProgress(k/uniqIdx.length);
+      if(k%8===0) await yieldUI();
+      if(state.cancelled) return {frames:[],w,h};
+    }
+    frames._timesS = frameTimesS;
+    return {frames, w, h};
+  } else {
+    return await ingestVideoFrames(state.files[0], cfg, onProgress);
+  }
+}
+async function loadImageBitmap(file){
+  if(window.createImageBitmap){ try{ return await createImageBitmap(file); } catch(e){} }
+  return await new Promise((res,rej)=>{ const img=new Image(); img.onload=()=>res(img); img.onerror=rej; img.src=URL.createObjectURL(file); });
+}
+async function ingestVideoFrames(file, cfg, onProgress){
+  const url = URL.createObjectURL(file);
+  const video = document.createElement('video');
+  video.src=url; video.muted=true; video.playsInline=true;
+  await new Promise((res,rej)=>{ video.onloadedmetadata=res; video.onerror=rej; });
+  const duration = video.duration;
+  let count = Math.min(cfg.maxFrames, Math.max(2, Math.floor(duration/cfg.frameIntervalS)));
+  const interval = duration/count;
+  const scale = Math.min(1, cfg.maxDim/Math.max(video.videoWidth, video.videoHeight));
+  const w = Math.max(2, Math.round(video.videoWidth*scale));
+  const h = Math.max(2, Math.round(video.videoHeight*scale));
+  const canvas = document.createElement('canvas'); canvas.width=w; canvas.height=h;
+  const ctx = canvas.getContext('2d', {willReadFrequently:true});
+  const frames=[]; const frameTimesS=[];
+  for(let i=0;i<count;i++){
+    const t = Math.min(duration-0.001, i*interval);
+    await seekVideo(video, t);
+    ctx.clearRect(0,0,w,h);
+    ctx.drawImage(video,0,0,w,h);
+    frames.push(rgbaToGray(ctx.getImageData(0,0,w,h)));
+    frameTimesS.push(i*cfg.frameIntervalS);
+    onProgress(i/count);
+    if(state.cancelled) break;
+  }
+  frames._timesS = frameTimesS;
+  URL.revokeObjectURL(url);
+  return {frames, w, h};
+}
+function seekVideo(video,t){
+  return new Promise(res=>{
+    const onSeeked=()=>{ video.removeEventListener('seeked', onSeeked); res(); };
+    video.addEventListener('seeked', onSeeked);
+    video.currentTime = t;
+  });
+}
+
+/* ---- Synthetic demo generator (no upload needed, for trying the tool) ---- */
+async function generateSyntheticFrames(cfg, onProgress){
+  const w=360, h=360, n=90;
+  const frames=[]; const frameTimesS=[];
+  const cx=w/2, cy=h/2, R=150;
+  const nParticles = 14;
+  const particles = Array.from({length:nParticles},()=>({
+    x: cx + (Math.random()*2-1)*R*0.8, y: cy + (Math.random()*2-1)*R*0.8,
+    vx:(Math.random()*2-1)*2.2, vy:(Math.random()*2-1)*2.2, r: 2+Math.random()*4, life: 20+Math.random()*70
+  }));
+  for(let f=0; f<n; f++){
+    const buf = new Uint8ClampedArray(w*h);
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+      const d = Math.hypot(x-cx,y-cy);
+      let v = d<R ? 150 - 60*(d/R) : 8;
+      v += (Math.random()*10-5);
+      buf[y*w+x]=clamp(v,0,255);
+    }
+    for(const p of particles){
+      p.x+=p.vx; p.y+=p.vy; p.life--;
+      if(Math.hypot(p.x-cx,p.y-cy) > R-3 || p.life<=0){ p.x=cx+(Math.random()*2-1)*R*0.5; p.y=cy+(Math.random()*2-1)*R*0.5; p.vx=(Math.random()*2-1)*2.2; p.vy=(Math.random()*2-1)*2.2; p.life=20+Math.random()*70; }
+      for(let dy=-p.r;dy<=p.r;dy++) for(let dx=-p.r;dx<=p.r;dx++){
+        if(dx*dx+dy*dy>p.r*p.r) continue;
+        const xx=Math.round(p.x+dx), yy=Math.round(p.y+dy);
+        if(xx<0||xx>=w||yy<0||yy>=h) continue;
+        buf[yy*w+xx] = clamp(buf[yy*w+xx] - 70, 0, 255);
+      }
+    }
+    frames.push(buf);
+    frameTimesS.push(f*cfg.frameIntervalS);
+    if(f%10===0){ onProgress(f/n); await yieldUI(); }
+  }
+  frames._timesS = frameTimesS;
+  return {frames, w, h};
+}
+
+/* ---- ROI estimation ---- */
+function estimateROI(bg,w,h){
+  const hist = histogramOf(bg,null);
+  const th = otsuThreshold(hist, w*h);
+  let mask = new Uint8Array(w*h);
+  for(let i=0;i<w*h;i++) mask[i] = bg[i]>th ? 1:0;
+  const r1 = Math.max(1, Math.round(0.006*Math.max(w,h)));
+  mask = dilateErode(mask,w,h,r1,true); mask = dilateErode(mask,w,h,r1,false); // close
+  mask = dilateErode(mask,w,h,r1,false); mask = dilateErode(mask,w,h,r1,true); // open
+  const {labels,numLabels} = connectedComponents(mask,w,h);
+  let roiMask = numLabels>0 ? largestComponentMask(labels,numLabels,w,h) : mask;
+  let areaPx=0; for(let i=0;i<w*h;i++) areaPx+=roiMask[i];
+  if(areaPx < 0.02*w*h){ roiMask = new Uint8Array(w*h).fill(1); areaPx=w*h; } // fallback: whole frame
+  return {mask:roiMask, areaPx, threshold:th};
+}
+
+/* ---- Exclusion masks: chronic-artifact frequency + illumination-rim gradient band ---- */
+async function buildExclusionMasks(frames, bg, roiMask, cfg, w, h, onProgress){
+  const n = frames.length;
+  const exceedCount = new Uint32Array(w*h);
+  for(let f=0; f<n; f++){
+    const gray = frames[f];
+    const diff = new Uint8ClampedArray(w*h);
+    for(let i=0;i<w*h;i++) diff[i]=Math.abs(gray[i]-bg[i]);
+    const hist = histogramOf(diff, roiMask);
+    let total=0; for(let i=0;i<w*h;i++) if(roiMask[i]) total++;
+    const th = Math.max(cfg.minAbsThresh, percentileFromHistogram(hist,total,cfg.pctThresh));
+    for(let i=0;i<w*h;i++) if(roiMask[i] && diff[i]>th) exceedCount[i]++;
+    if(f%15===0){ onProgress(f/n*0.75); await yieldUI(); }
+    if(state.cancelled) break;
+  }
+  let chronicMask = new Uint8Array(w*h);
+  for(let i=0;i<w*h;i++) chronicMask[i] = (exceedCount[i]/n) > cfg.chronicFreqThresh ? 1:0;
+  chronicMask = dilateErode(chronicMask,w,h,1,true);
+  onProgress(0.85);
+
+  const gradMag = sobelGradientMagnitude(bg,w,h);
+  let gMin=Infinity,gMax=-Infinity;
+  const roiVals=[];
+  for(let i=0;i<w*h;i++) if(roiMask[i]){ roiVals.push(gradMag[i]); }
+  roiVals.sort((a,b)=>a-b);
+  const edgeIdx = Math.min(roiVals.length-1, Math.floor((cfg.edgeGradPercentile/100)*roiVals.length));
+  const edgeTh = roiVals.length ? roiVals[edgeIdx] : 0;
+  let edgeBand = new Uint8Array(w*h);
+  for(let i=0;i<w*h;i++) edgeBand[i] = gradMag[i]>edgeTh ? 1:0;
+  const edgeRadius = Math.max(1, Math.round((cfg.edgeWidthPct/100)*Math.max(w,h)));
+  edgeBand = dilateErode(edgeBand,w,h,edgeRadius,true);
+  onProgress(1);
+
+  const validMask = new Uint8Array(w*h);
+  for(let i=0;i<w*h;i++) validMask[i] = (roiMask[i] && !chronicMask[i] && !edgeBand[i]) ? 1:0;
+  return {validMask, chronicMask, edgeBand, freqMap:exceedCount, n};
+}
+
+/* ---- Per-frame particle detection ---- */
+async function detectAllFrames(frames, bg, validMask, cfg, w, h, onProgress){
+  const n = frames.length;
+  const times = frames._timesS || frames.map((_,i)=>i*cfg.frameIntervalS);
+  const all = [];
+  let validTotal=0; for(let i=0;i<w*h;i++) if(validMask[i]) validTotal++;
+  for(let f=0; f<n; f++){
+    const gray = frames[f];
+    const diff = new Uint8ClampedArray(w*h);
+    for(let i=0;i<w*h;i++) diff[i] = validMask[i] ? Math.abs(gray[i]-bg[i]) : 0;
+    const hist = histogramOf(diff, validMask);
+    const th = Math.max(cfg.minAbsThresh, percentileFromHistogram(hist, validTotal, cfg.pctThresh));
+    let bw = new Uint8Array(w*h);
+    for(let i=0;i<w*h;i++) bw[i] = diff[i]>th ? 1:0;
+    bw = dilateErode(bw,w,h,1,false); bw = dilateErode(bw,w,h,1,true); // opening: remove salt noise
+
+    const {labels,numLabels} = connectedComponents(bw,w,h);
+    const props = regionProps(labels,numLabels,w,h,diff);
+    for(const p of props){
+      if(p.areaPx < cfg.minAreaPx || p.areaPx > cfg.maxAreaPx) continue;
+      all.push({ frameIdx:f, timeS:times[f], ...p, trackId:-1, confirmed:false });
+    }
+    onProgress(f/n);
+    if(f%10===0) await yieldUI();
+    if(state.cancelled) break;
+  }
+  return all;
+}
+
+/* ---- Tracking: Hungarian assignment + constant-velocity gating (mirrors the
+       MATLAB pipeline's dependency-free fallback path) ---- */
+async function trackParticles(allDet, nFrames, cfg, w, h, onProgress){
+  const byFrame = Array.from({length:nFrames},()=>[]);
+  for(const d of allDet) byFrame[d.frameIdx].push(d);
+  const gateDist = (cfg.gatePct/100)*Math.max(w,h);
+
+  const tracks = []; // {id, positions:[det,...], missed, active}
+  let nextId=1;
+  const activeIdx = [];
+
+  for(let f=0; f<nFrames; f++){
+    const dets = byFrame[f];
+    const active = tracks.filter(t=>t.active);
+    if(active.length && dets.length){
+      const cost = active.map(t=>{
+        const pos = predictPosition(t);
+        return dets.map(d=>{
+          const dist = Math.hypot(d.cx-pos.x, d.cy-pos.y);
+          return dist>gateDist ? 1e7 : dist;
+        });
+      });
+      const assign = hungarianAssign(cost);
+      const usedDet = new Set();
+      assign.forEach((detIdx, trackI)=>{
+        if(detIdx>=0 && cost[trackI][detIdx] < 1e6){
+          const t = active[trackI];
+          dets[detIdx].trackId = t.id;
+          t.positions.push(dets[detIdx]);
+          t.missed = 0;
+          usedDet.add(detIdx);
+        }
+      });
+      active.forEach((t,i)=>{
+        if(!t.positions.length || t.positions[t.positions.length-1].frameIdx!==f){
+          t.missed++;
+          if(t.missed > cfg.maxMissedFrames) t.active=false;
+        }
+      });
+      dets.forEach((d,i)=>{ if(!usedDet.has(i)){ const nt={id:nextId++, positions:[d], missed:0, active:true}; d.trackId=nt.id; tracks.push(nt); } });
+    } else if(dets.length){
+      dets.forEach(d=>{ const nt={id:nextId++, positions:[d], missed:0, active:true}; d.trackId=nt.id; tracks.push(nt); });
+    } else if(active.length){
+      active.forEach(t=>{ t.missed++; if(t.missed>cfg.maxMissedFrames) t.active=false; });
+    }
+    if(f%10===0){ onProgress(f/nFrames); await yieldUI(); }
+    if(state.cancelled) break;
+  }
+
+  const trackRows = [];
+  for(const t of tracks){
+    const pos = t.positions;
+    const confirmed = pos.length >= cfg.minTrackLength;
+    pos.forEach(d=> d.confirmed = confirmed);
+    if(pos.length===0) continue;
+    let pathLength=0;
+    for(let i=1;i<pos.length;i++) pathLength += Math.hypot(pos[i].cx-pos[i-1].cx, pos[i].cy-pos[i-1].cy);
+    const netDisp = Math.hypot(pos[pos.length-1].cx-pos[0].cx, pos[pos.length-1].cy-pos[0].cy);
+    const durationS = Math.max(cfg.frameIntervalS, (pos[pos.length-1].frameIdx-pos[0].frameIdx)*cfg.frameIntervalS);
+    const meanSpeed = pos.length>1 ? pathLength/durationS : 0;
+    trackRows.push({
+      trackId:t.id, nDetections:pos.length, startFrame:pos[0].frameIdx, endFrame:pos[pos.length-1].frameIdx,
+      lifetimeS: (pos.length)*cfg.frameIntervalS, pathLengthPx:pathLength, netDisplacementPx:netDisp,
+      meanSpeedPxPerS:meanSpeed, confirmed
+    });
+  }
+  return { detTable: allDet, trackTable: trackRows.filter(t=>t.confirmed) };
+}
+function predictPosition(track){
+  const pos = track.positions;
+  const last = pos[pos.length-1];
+  if(pos.length>=2){
+    const prev = pos[pos.length-2];
+    const df = Math.max(1, last.frameIdx-prev.frameIdx);
+    return { x: last.cx + (last.cx-prev.cx)/df, y: last.cy + (last.cy-prev.cy)/df };
+  }
+  return { x:last.cx, y:last.cy };
+}
+
+/* ---- Frame-level metrics ---- */
+function computeFrameMetrics(detTable, nFrames, roiAreaPx, cfg){
+  const counts = new Array(nFrames).fill(0);
+  for(const d of detTable) if(d.confirmed) counts[d.frameIdx]++;
+  const rows=[];
+  for(let f=0; f<nFrames; f++){
+    rows.push({ frameIdx:f, timeS:f*cfg.frameIntervalS, nParticles:counts[f], concentrationPer1000: roiAreaPx>0 ? counts[f]/roiAreaPx*1000 : 0 });
+  }
+  return rows;
+}
+
+function grayToCanvas(gray,w,h){
+  const c = document.createElement('canvas'); c.width=w; c.height=h;
+  const ctx = c.getContext('2d');
+  const imgData = ctx.createImageData(w,h);
+  for(let i=0;i<w*h;i++){ const v=gray[i]; imgData.data[i*4]=v; imgData.data[i*4+1]=v; imgData.data[i*4+2]=v; imgData.data[i*4+3]=255; }
+  ctx.putImageData(imgData,0,0);
+  return c;
+}
+</script>
+<script>
+/* =========================================================================
+   7. LIGHTWEIGHT CANVAS CHART LIBRARY  (dependency-free; dataviz-skill
+      styling: thin marks, recessive grid, hover tooltips, sequential ramp)
+   ========================================================================= */
+const tooltipEl = document.getElementById('tooltipFloat');
+function showTip(x,y,html){ tooltipEl.innerHTML=html; tooltipEl.style.left=(x+14)+'px'; tooltipEl.style.top=(y+14)+'px'; tooltipEl.style.opacity=1; }
+function hideTip(){ tooltipEl.style.opacity=0; }
+
+function setupCanvas(canvas){
+  const dpr = window.devicePixelRatio||1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const cssW = Math.max(160, rect.width);
+  const cssH = Math.max(140, canvas.parentElement.clientHeight || 220);
+  canvas.style.width = cssW+'px'; canvas.style.height=cssH+'px';
+  canvas.width = Math.round(cssW*dpr); canvas.height = Math.round(cssH*dpr);
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return {ctx, w:cssW, h:cssH};
+}
+const MARGIN = {l:44, r:14, t:10, b:32};
+
+function drawAxes(ctx, w, h, xTicks, yTicks, xLabel, yLabel){
+  ctx.save();
+  ctx.strokeStyle = PAL.grid; ctx.lineWidth=1; ctx.font='10px -apple-system,sans-serif'; ctx.fillStyle=PAL.text;
+  const plotW = w-MARGIN.l-MARGIN.r, plotH = h-MARGIN.t-MARGIN.b;
+  yTicks.ticks.forEach(v=>{
+    const y = MARGIN.t + plotH*(1-(v-yTicks.min)/(yTicks.max-yTicks.min||1));
+    ctx.beginPath(); ctx.moveTo(MARGIN.l,y); ctx.lineTo(w-MARGIN.r,y); ctx.stroke();
+    ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.fillText(fmtNum(v), MARGIN.l-6, y);
+  });
+  ctx.strokeStyle = PAL.axis;
+  xTicks.ticks.forEach(v=>{
+    const x = MARGIN.l + plotW*((v-xTicks.min)/(xTicks.max-xTicks.min||1));
+    ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillStyle=PAL.text;
+    ctx.fillText(fmtNum(v), x, h-MARGIN.b+6);
+  });
+  ctx.beginPath(); ctx.moveTo(MARGIN.l,MARGIN.t); ctx.lineTo(MARGIN.l,h-MARGIN.b); ctx.lineTo(w-MARGIN.r,h-MARGIN.b); ctx.stroke();
+  ctx.restore();
+  return {plotX:MARGIN.l, plotY:MARGIN.t, plotW, plotH,
+    sx:(v)=> MARGIN.l + plotW*((v-xTicks.min)/(xTicks.max-xTicks.min||1)),
+    sy:(v)=> MARGIN.t + plotH*(1-(v-yTicks.min)/(yTicks.max-yTicks.min||1))
+  };
+}
+function emptyState(ctx,w,h,msg){
+  ctx.save(); ctx.fillStyle=PAL.text; ctx.font='12px -apple-system,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(msg||'No data', w/2, h/2); ctx.restore();
+}
+
+function renderLineChart(canvas, x, y, opts){
+  opts = opts||{};
+  const {ctx,w,h} = setupCanvas(canvas);
+  ctx.clearRect(0,0,w,h);
+  if(!x.length){ emptyState(ctx,w,h); return; }
+  const xr = niceTicks(Math.min(...x), Math.max(...x), 5);
+  const yr = niceTicks(0, Math.max(...y,0.001), 5);
+  const S = drawAxes(ctx,w,h,xr,yr);
+  const color = opts.color||PAL.blue;
+  if(opts.area){
+    ctx.beginPath(); ctx.moveTo(S.sx(x[0]), S.sy(0));
+    x.forEach((xv,i)=> ctx.lineTo(S.sx(xv), S.sy(y[i])));
+    ctx.lineTo(S.sx(x[x.length-1]), S.sy(0)); ctx.closePath();
+    ctx.fillStyle = color+'26'; ctx.fill();
+  }
+  ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=1.6; ctx.lineJoin='round';
+  x.forEach((xv,i)=>{ const px=S.sx(xv), py=S.sy(y[i]); i?ctx.lineTo(px,py):ctx.moveTo(px,py); });
+  ctx.stroke();
+  if(opts.xLabelUnit) axisCaption(ctx,w,h,opts.xLabelUnit,opts.yLabelUnit);
+
+  canvas.onmousemove = (e)=>{
+    const rect=canvas.getBoundingClientRect(); const mx=e.clientX-rect.left;
+    let best=0, bd=Infinity;
+    x.forEach((xv,i)=>{ const d=Math.abs(S.sx(xv)-mx); if(d<bd){bd=d;best=i;} });
+    if(bd>26){ hideTip(); return; }
+    showTip(e.clientX,e.clientY, `<div class="row"><span>${opts.xName||'x'}</span><b>${fmtNum(x[best])}</b></div><div class="row"><span>${opts.yName||'y'}</span><b>${fmtNum(y[best])}</b></div>`);
+  };
+  canvas.onmouseleave = hideTip;
+}
+
+function computeHistBins(values, nBins){
+  if(!values.length) return {edges:[0,1], counts:[0]};
+  const mn=Math.min(...values), mx=Math.max(...values);
+  const span = mx-mn || 1;
+  const edges=[]; for(let i=0;i<=nBins;i++) edges.push(mn+span*i/nBins);
+  const counts = new Array(nBins).fill(0);
+  values.forEach(v=>{ let b=Math.floor((v-mn)/span*nBins); if(b>=nBins) b=nBins-1; if(b<0) b=0; counts[b]++; });
+  return {edges, counts};
+}
+function renderHistogram(canvas, values, opts){
+  opts=opts||{};
+  const {ctx,w,h} = setupCanvas(canvas);
+  ctx.clearRect(0,0,w,h);
+  if(!values.length){ emptyState(ctx,w,h); return; }
+  const {edges,counts} = computeHistBins(values, opts.bins||22);
+  const xr = niceTicks(edges[0], edges[edges.length-1], 5);
+  const yr = niceTicks(0, Math.max(...counts,1), 4);
+  const S = drawAxes(ctx,w,h,xr,yr);
+  const color = opts.color||PAL.blue;
+  const n = counts.length;
+  for(let i=0;i<n;i++){
+    const x0 = S.sx(edges[i]), x1 = S.sx(edges[i+1]);
+    const y0 = S.sy(0), y1 = S.sy(counts[i]);
+    ctx.fillStyle=color; ctx.fillRect(x0+0.5, y1, Math.max(1,x1-x0-1), y0-y1);
+  }
+  canvas.onmousemove=(e)=>{
+    const rect=canvas.getBoundingClientRect(); const mx=e.clientX-rect.left;
+    for(let i=0;i<n;i++){
+      const x0=S.sx(edges[i]), x1=S.sx(edges[i+1]);
+      if(mx>=x0 && mx<=x1){ showTip(e.clientX,e.clientY, `<div class="row"><span>range</span><b>${fmtNum(edges[i])}–${fmtNum(edges[i+1])}</b></div><div class="row"><span>count</span><b>${counts[i]}</b></div>`); return; }
+    }
+    hideTip();
+  };
+  canvas.onmouseleave=hideTip;
+}
+
+function renderScatter(canvas, x, y, colorVals, opts){
+  opts=opts||{};
+  const {ctx,w,h} = setupCanvas(canvas);
+  ctx.clearRect(0,0,w,h);
+  if(!x.length){ emptyState(ctx,w,h); return; }
+  const xr = niceTicks(Math.min(...x,0), Math.max(...x), 5);
+  const yr = niceTicks(Math.min(...y,0), Math.max(...y), 5);
+  const S = drawAxes(ctx,w,h,xr,yr);
+  let cMin=0,cMax=1;
+  if(colorVals && colorVals.length){ cMin=Math.min(...colorVals); cMax=Math.max(...colorVals); }
+  if(opts.refLine){
+    const mx = Math.max(xr.max,yr.max);
+    ctx.save(); ctx.strokeStyle='rgba(255,255,255,.28)'; ctx.setLineDash([4,4]); ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(S.sx(0),S.sy(0)); ctx.lineTo(S.sx(mx),S.sy(mx)); ctx.stroke(); ctx.restore();
+  }
+  const pts = x.map((xv,i)=>({x:xv,y:y[i],c:colorVals?colorVals[i]:0,i}));
+  pts.forEach(p=>{
+    const px=S.sx(p.x), py=S.sy(p.y);
+    const t = cMax>cMin ? (p.c-cMin)/(cMax-cMin) : 0.5;
+    ctx.beginPath(); ctx.fillStyle = colorVals ? seqBlueAt(t) : (opts.color||PAL.blue);
+    ctx.globalAlpha=0.78; ctx.arc(px,py,opts.r||3.4,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
+  });
+  canvas.onmousemove=(e)=>{
+    const rect=canvas.getBoundingClientRect(); const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+    let best=null, bd=64;
+    pts.forEach(p=>{ const d=(S.sx(p.x)-mx)**2+(S.sy(p.y)-my)**2; if(d<bd){bd=d;best=p;} });
+    if(!best){ hideTip(); return; }
+    let html = `<div class="row"><span>${opts.xName||'x'}</span><b>${fmtNum(best.x)}</b></div><div class="row"><span>${opts.yName||'y'}</span><b>${fmtNum(best.y)}</b></div>`;
+    if(colorVals) html += `<div class="row"><span>${opts.cName||'value'}</span><b>${fmtNum(best.c)}</b></div>`;
+    showTip(e.clientX,e.clientY, html);
+  };
+  canvas.onmouseleave=hideTip;
+}
+
+/* Trajectory map: background image + per-track colored polylines */
+function renderTrajectoryMap(canvas, bgCanvas, trackTable, detTable){
+  const {ctx,w,h} = setupCanvas(canvas);
+  ctx.clearRect(0,0,w,h);
+  const iw = bgCanvas.width, ih = bgCanvas.height;
+  const scale = Math.min(w/iw, h/ih);
+  const dw = iw*scale, dh = ih*scale, ox=(w-dw)/2, oy=(h-dh)/2;
+  ctx.drawImage(bgCanvas, ox, oy, dw, dh);
+  if(!trackTable.length){ ctx.fillStyle='rgba(255,255,255,.5)'; ctx.font='12px sans-serif'; ctx.textAlign='center'; ctx.fillText('No confirmed tracks', w/2, h/2); return; }
+  const byTrack = {};
+  detTable.forEach(d=>{ if(!d.confirmed) return; (byTrack[d.trackId]=byTrack[d.trackId]||[]).push(d); });
+  const ids = Object.keys(byTrack);
+  ids.forEach((id,i)=>{
+    const pts = byTrack[id].sort((a,b)=>a.frameIdx-b.frameIdx);
+    const hue = 200 + (i/Math.max(1,ids.length-1))*260;
+    ctx.beginPath(); ctx.strokeStyle=`hsla(${hue%360},70%,60%,.85)`; ctx.lineWidth=1.3;
+    pts.forEach((p,j)=>{ const px=ox+p.cx*scale, py=oy+p.cy*scale; j?ctx.lineTo(px,py):ctx.moveTo(px,py); });
+    ctx.stroke();
+    const first=pts[0], last=pts[pts.length-1];
+    ctx.beginPath(); ctx.fillStyle=PAL.green; ctx.arc(ox+first.cx*scale, oy+first.cy*scale, 3, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.fillStyle=PAL.red; ctx.arc(ox+last.cx*scale, oy+last.cy*scale, 3, 0, 7); ctx.fill();
+  });
+}
+
+/* Spatial density heatmap over background */
+function renderHeatmap(canvas, bgCanvas, points, roiAreaPx){
+  const {ctx,w,h} = setupCanvas(canvas);
+  ctx.clearRect(0,0,w,h);
+  const iw=bgCanvas.width, ih=bgCanvas.height;
+  const scale = Math.min(w/iw, h/ih);
+  const dw=iw*scale, dh=ih*scale, ox=(w-dw)/2, oy=(h-dh)/2;
+  ctx.drawImage(bgCanvas, ox, oy, dw, dh);
+  if(!points.length) return;
+  const gridN = 26;
+  const cellW = iw/gridN, cellH = ih/gridN;
+  const counts = new Array(gridN*gridN).fill(0);
+  points.forEach(p=>{
+    let gx=Math.floor(p.cx/cellW), gy=Math.floor(p.cy/cellH);
+    gx=clamp(gx,0,gridN-1); gy=clamp(gy,0,gridN-1);
+    counts[gy*gridN+gx]++;
+  });
+  const maxC = Math.max(...counts,1);
+  for(let gy=0;gy<gridN;gy++) for(let gx=0;gx<gridN;gx++){
+    const c = counts[gy*gridN+gx]; if(!c) continue;
+    const t = c/maxC;
+    ctx.fillStyle = seqBlueAt(t);
+    ctx.globalAlpha = 0.32+0.45*t;
+    ctx.fillRect(ox+gx*cellW*scale, oy+gy*cellH*scale, cellW*scale+0.6, cellH*scale+0.6);
+  }
+  ctx.globalAlpha=1;
+}
+
+function axisCaption(){} // reserved
+
+/* =========================================================================
+   8. RENDER RESULTS
+   ========================================================================= */
+function renderResults(R){
+  const {detTable, trackTable, frameMetrics, bg, bgCanvas, roi, w, h, cfg, nFrames} = R;
+  const conf = detTable.filter(d=>d.confirmed);
+  const unit = cfg.umPerPixel ? 'µm' : 'px';
+  const toUnit = (v)=> cfg.umPerPixel ? v*cfg.umPerPixel : v;
+
+  document.getElementById('resultsSummarySentence').textContent =
+    `Processed ${nFrames} frames at ${w}×${h}px, found ${detTable.length} raw detections, confirmed ${trackTable.length} tracks (≥${cfg.minTrackLength} detections) totalling ${conf.length} confirmed detections.`;
+
+  const meanPerFrame = mean(frameMetrics.map(f=>f.nParticles));
+  const maxPerFrame = Math.max(...frameMetrics.map(f=>f.nParticles),0);
+  document.getElementById('statGrid').innerHTML = [
+    ['Frames processed', nFrames, ''],
+    ['Raw detections', detTable.length, ''],
+    ['Confirmed tracks', trackTable.length, `of ${new Set(detTable.map(d=>d.trackId)).size} total`],
+    ['Confirmed detections', conf.length, ''],
+    ['Mean particles / frame', meanPerFrame.toFixed(1), ''],
+    ['Max in a single frame', maxPerFrame, ''],
+    ['Field-of-view area', Math.round(roi.areaPx)+' px²', ''],
+    ['Calibration', cfg.umPerPixel? cfg.umPerPixel+' µm/px' : 'none (pixel units)', ''],
+  ].map(([label,value,delta])=>`<div class="stat-card"><div class="label">${label}</div><div class="value">${value}</div>${delta?`<div class="delta">${delta}</div>`:''}</div>`).join('');
+
+  // QA masks
+  const qaGrid = document.getElementById('qaGrid');
+  qaGrid.innerHTML='';
+  const tiles = [
+    ['Background (temporal median)', bg],
+    ['Field-of-view (ROI) mask', roi.mask],
+    ['Chronic-artifact mask', R.excl.chronicMask],
+    ['Illumination-rim exclusion band', R.excl.edgeBand],
+    ['Valid detection mask', R.excl.validMask],
+  ];
+  tiles.forEach(([cap,arr])=>{
+    const c = document.createElement('canvas'); c.width=w; c.height=h;
+    const ctx=c.getContext('2d'); const id=ctx.createImageData(w,h);
+    const isBg = arr===bg;
+    for(let i=0;i<w*h;i++){ const v = isBg? arr[i] : (arr[i]?235:15); id.data[i*4]=v; id.data[i*4+1]=v; id.data[i*4+2]=v; id.data[i*4+3]=255; }
+    ctx.putImageData(id,0,0);
+    const tile=document.createElement('div'); tile.className='qa-tile';
+    tile.innerHTML = `<div class="cap">${cap}</div>`; tile.prepend(c);
+    qaGrid.appendChild(tile);
+  });
+
+  document.getElementById('d1sub').textContent = `${trackTable.length} confirmed tracks across ${nFrames} frames`;
+  document.getElementById('d2sub').textContent = `${conf.length} confirmed detections`;
+  document.getElementById('d3sub').textContent = `${conf.length} confirmed detections · ${trackTable.length} confirmed tracks · FOV area ${Math.round(roi.areaPx)} px²`;
+
+  // ---- Dashboard 1: Motion tracking ----
+  renderTrajectoryMap(document.getElementById('cvTraj'), bgCanvas, trackTable, detTable);
+  renderLineChart(document.getElementById('cvActivity'), frameMetrics.map(f=>f.timeS), frameMetrics.map(f=>f.nParticles), {color:PAL.blue, area:true, xName:'time (s)', yName:'count'});
+  renderHistogram(document.getElementById('cvSpeed'), trackTable.map(t=>toUnit(t.meanSpeedPxPerS)), {color:PAL.aqua});
+  renderScatter(document.getElementById('cvPathShape'), trackTable.map(t=>toUnit(t.pathLengthPx)), trackTable.map(t=>toUnit(t.netDisplacementPx)), trackTable.map(t=>toUnit(t.meanSpeedPxPerS)), {refLine:true, xName:'path length', yName:'net displacement', cName:'mean speed'});
+
+  // ---- Dashboard 2: Morphology ----
+  renderScatter(document.getElementById('cvShapeSize'), conf.map(d=>toUnit(d.equivDiameterPx)), conf.map(d=>d.circularity), conf.map(d=>d.eccentricity), {xName:'equiv. diameter', yName:'circularity', cName:'eccentricity'});
+  renderHistogram(document.getElementById('cvEcc'), conf.map(d=>d.eccentricity), {color:PAL.violet, bins:24});
+  renderHistogram(document.getElementById('cvSolidity'), conf.map(d=>d.solidity), {color:PAL.magenta, bins:24});
+  renderHistogram(document.getElementById('cvAspect'), conf.map(d=>d.majorAxisPx/Math.max(d.minorAxisPx,1e-6)), {color:PAL.yellow, bins:24});
+
+  // ---- Dashboard 3: Distribution ----
+  renderHistogram(document.getElementById('cvSize'), conf.map(d=>toUnit(d.equivDiameterPx)), {color:PAL.blue, bins:24});
+  renderLineChart(document.getElementById('cvConc'), frameMetrics.map(f=>f.timeS), frameMetrics.map(f=>f.concentrationPer1000), {color:PAL.aqua, area:true, xName:'time (s)', yName:'per 1000px²'});
+  renderHeatmap(document.getElementById('cvHeat'), bgCanvas, conf, roi.areaPx);
+  renderHistogram(document.getElementById('cvRtd'), trackTable.map(t=>t.lifetimeS), {color:PAL.red, bins:20});
+
+  document.getElementById('runFooterNote').textContent = `Last run: ${nFrames} frames · ${w}×${h}px processing resolution · ${new Date().toLocaleString()}`;
+}
+let _resizeTimer;
+function debounce(fn,ms){ return (...a)=>{ clearTimeout(_resizeTimer); _resizeTimer=setTimeout(()=>fn(...a),ms); }; }
+function rerenderActiveTab(){ if(state.results) renderResults(state.results); }
+window.addEventListener('resize', debounce(rerenderActiveTab, 200));
+
+/* =========================================================================
+   9. TAB / TOGGLE WIRING
+   ========================================================================= */
+document.getElementById('tabbar').addEventListener('click', e=>{
+  const btn = e.target.closest('.tabbtn'); if(!btn) return;
+  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tabpanel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+  // Canvases inside a panel that was just display:none measure 0 at draw time,
+  // so re-render once the panel is actually visible in the layout.
+  if(state.results) renderResults(state.results);
+});
+document.getElementById('qaToggle').addEventListener('click', ()=>{
+  document.getElementById('qaToggle').classList.toggle('open');
+  document.getElementById('qaGrid').classList.toggle('open');
+});
+
+/* =========================================================================
+   10. EXPORTS  (CSV / JSON / composite PNG)
+   ========================================================================= */
+function downloadBlob(content, filename, type){
+  const blob = new Blob([content], {type});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+function toCSV(rows, cols){
+  const header = cols.join(',');
+  const lines = rows.map(r=> cols.map(c=> typeof r[c]==='number'? r[c].toFixed(4): r[c]).join(','));
+  return [header, ...lines].join('\n');
+}
+document.getElementById('expDet').addEventListener('click', ()=>{
+  if(!state.results) return;
+  const cols=['frameIdx','timeS','trackId','confirmed','cx','cy','areaPx','equivDiameterPx','perimeterPx','circularity','majorAxisPx','minorAxisPx','eccentricity','solidity','orientationDeg'];
+  downloadBlob(toCSV(state.results.detTable, cols), 'per_frame_detections.csv','text/csv');
+});
+document.getElementById('expTrack').addEventListener('click', ()=>{
+  if(!state.results) return;
+  const cols=['trackId','nDetections','startFrame','endFrame','lifetimeS','pathLengthPx','netDisplacementPx','meanSpeedPxPerS'];
+  downloadBlob(toCSV(state.results.trackTable, cols), 'track_summary.csv','text/csv');
+});
+document.getElementById('expFrame').addEventListener('click', ()=>{
+  if(!state.results) return;
+  const cols=['frameIdx','timeS','nParticles','concentrationPer1000'];
+  downloadBlob(toCSV(state.results.frameMetrics, cols), 'frame_metrics.csv','text/csv');
+});
+document.getElementById('expJson').addEventListener('click', ()=>{
+  if(!state.results) return;
+  const R = state.results;
+  const summary = {
+    generatedAt: new Date().toISOString(),
+    framesProcessed: R.nFrames, processingResolution:{w:R.w,h:R.h},
+    rawDetections: R.detTable.length, confirmedTracks: R.trackTable.length,
+    confirmedDetections: R.detTable.filter(d=>d.confirmed).length,
+    roiAreaPx: R.roi.areaPx, config: R.cfg
+  };
+  downloadBlob(JSON.stringify(summary,null,2), 'run_summary.json','application/json');
+});
+document.querySelectorAll('[data-export]').forEach(btn=>{
+  btn.addEventListener('click', ()=> exportDashboardPNG(btn.dataset.export));
+});
+function exportDashboardPNG(which){
+  const panelIds = { dash1:['cvTraj','cvActivity','cvSpeed','cvPathShape'], dash2:['cvShapeSize','cvEcc','cvSolidity','cvAspect'], dash3:['cvSize','cvConc','cvHeat','cvRtd'] };
+  const titles = { dash1:'Dashboard 1 — Motion Tracking Analysis', dash2:'Dashboard 2 — Morphology & Particle Shape Analysis', dash3:'Dashboard 3 — Distribution of Particles' };
+  const ids = panelIds[which];
+  const out = document.createElement('canvas'); out.width=1300; out.height=1000;
+  const ctx = out.getContext('2d');
+  ctx.fillStyle='#0a0e17'; ctx.fillRect(0,0,out.width,out.height);
+  ctx.fillStyle='#eef2fb'; ctx.font='bold 26px -apple-system,sans-serif'; ctx.textAlign='center';
+  ctx.fillText(titles[which], out.width/2, 44);
+  const cellW = out.width/2 - 30, cellH = (out.height-100)/2 - 20;
+  const positions = [[20,80],[out.width/2+10,80],[20,80+cellH+30],[out.width/2+10,80+cellH+30]];
+  ids.forEach((id,i)=>{
+    const src = document.getElementById(id);
+    const [x,y] = positions[i];
+    ctx.strokeStyle='#293350'; ctx.strokeRect(x,y,cellW,cellH);
+    try{ ctx.drawImage(src, x+4, y+4, cellW-8, cellH-8); }catch(e){}
+  });
+  out.toBlob(blob=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=which+'.png'; a.click(); });
+}
+</script>
+</body>
+</html>
